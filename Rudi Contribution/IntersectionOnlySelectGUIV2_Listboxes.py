@@ -205,7 +205,7 @@ def GDistMat(reqtime, origins, destinations, RName, timestamp):
     import datetime
     import calendar
     import time
-    maps_key = "AIzaSyCma3ToCjTI_7A5Wkq0HUeDtNtACS0IS20"
+    maps_key = "PLACEHOLDER"
     gmaps = googlemaps.Client(key=maps_key)
 
     deptime = reqtime

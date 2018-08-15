@@ -26,7 +26,7 @@ while True:
     if table_index < len(table_list) and table_index > 0:    
         table_title = table_list.iloc[table_index]['table'] + " "
         break
-    elif table_index >len(table_list) or table_index < 0:
+    else:
         print("Enter a valid index")
         
 print(table_title)
@@ -113,7 +113,7 @@ while True and seasonal_input == 'y':
         
 while True:
     #Asks for time input as either an AM, PM or ALL input
-    time_input = input('Enter AM (before noon), PM(after noon), AM Peak input ampeak (7-9), PM Peak input pmpeak (4-6)  or "All": ')
+    time_input = input('Enter AM (before noon), PM(after noon), AM Peak input: ampeak (7-9), PM Peak input: pmpeak (4-6)  or "All": ')
     time_input = time_input.lower()
     if time_input == 'am':
         #If input is AM it returns a query to specify request time < 12 (noon)
@@ -151,7 +151,7 @@ while True:
 weekdays_list =[]
 while True:
     #Works much the same as the month input. Checks input based on list of days, creates a list if user inputs multiple days.
-    weekday_input = input('Enter desired weekday (monday, tuesday, wednesday etc), No weekend (enter weekday), weekend (enter weekend) or "All" (press enter on blank line when done): ')
+    weekday_input = input('Enter desired weekday (monday, tuesday, wednesday etc), all weekdays (enter weekday), only weekend (enter weekend) or "All" (press enter on blank line when done): ')
     weekday_input = weekday_input.lower()
     #Input only allows one input per line
     if weekday_input == 'monday' or weekday_input == 'tuesday' or weekday_input == 'wednesday' or weekday_input == 'thursday' or weekday_input == 'friday' or weekday_input == 'saturday' or weekday_input == 'sunday':
@@ -177,11 +177,30 @@ while True:
         
         
 #Joins all the queries and creates an SQL compatible query to execute.
-SQL_input = "SELECT * FROM " + table_title + month_sql_input + weekday_sql_input + time_input + ";"
-print(SQL_input)
-    
+SQL_input = "SELECT distinct(street_name) FROM " + table_title + month_sql_input + weekday_sql_input + time_input + ";"
+
 #Puts SQL table into a Pandas Dataframe
+streets = pd.read_sql_query(SQL_input, conn)
+
+print(streets)
+
+while len(streets) > 0:
+    street_input = input('Please enter desired street index or "all" for all streets: ')
+    street_input = street_input.lower()
+    if int(street_input) < len(streets) and int(street_input) > 0:
+        street_name = streets.iloc[int(street_input)]['street_name']
+        street_sql_input = "AND street_name ILIKE '" + street_name + "'"
+        break
+    elif street_input == 'all':
+        street_name = ''
+        break
+    else:
+        print('Please input index again')
+
+SQL_input = "SELECT * FROM " + table_title + month_sql_input + weekday_sql_input + time_input + street_sql_input + ";"
+
 df = pd.read_sql_query(SQL_input, conn)
+
 dfstat = df[['travel_time']].describe(percentiles = [0.15, 0.25, 0.5, 0.7, 0.95])
 
 excel_name = input("Input your desired file name: ")

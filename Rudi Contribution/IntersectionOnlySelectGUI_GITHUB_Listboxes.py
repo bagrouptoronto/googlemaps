@@ -13,7 +13,7 @@ from tkinter import *
 import tkinter as tk
 from pymsgbox import *
 #Specify where to read CSV with all intersections from.
-OD_list = pd.read_csv('R:/Modeling and Simulation (M&S - Vissim)/Google Maps Distance Matrix API/Intersection Shortened.csv')
+OD_list = pd.read_csv('R:/Modeling and Simulation (M&S - Vissim)/Google Maps Distance Matrix API/Intersection MASTER LIST.csv')
 OD_list['INTERSEC5'] = OD_list['INTERSEC5'].str.lower()
 
 global coord_1_list
@@ -69,7 +69,6 @@ def saveinter():
         inter_1_list.append(inter_2)
         inter_2_list.append(inter_1)
     alert(title="Update", text="Appended!", button='OK')
-    print(inter_1_list, inter_2_list)
 """ Checks if request was of appropriate length and variable type.""" 
 def request_length():
     global r_length
@@ -108,7 +107,7 @@ try:
         streetlist = OD_list[OD_list['INTERSEC5'].str.contains(street_name.lower())]
         #If the street input does not exist the dataframe will have a length of 0 and return an error.
         if len(streetlist)==0:
-            alert(title="Notice", text="Query returned 0 results", button="Try Again")
+            alert(title="Notice", text="Intersection does not exist", button="Try Again")
     
     
     #Once an appropriate street has been given it produces two lists of available intersections.
@@ -123,7 +122,7 @@ try:
     int_1_select = StringVar()
     int_2_select = StringVar()
     
-    lab1 = Label(row, width=20, text="Intersection 1", anchor='w', font=("Helvetica", 10))
+    lab1 = Label(row, width=20, text="Intersection 1:", anchor='w', font=("Helvetica", 13))
     
     scrollbar1 = Scrollbar(row, orient=VERTICAL)
     int_1_list = Listbox(row, yscrollcommand=scrollbar1.set)
@@ -137,7 +136,7 @@ try:
     int_1_list.pack(side= RIGHT, fill=X, expand=YES)
     
     row = Frame(intersections)
-    lab2 = Label(row, width=20, text="Intersection 2", anchor='w', font=("Helvetica", 10))
+    lab2 = Label(row, width=20, text="Intersection 2:", anchor='w', font=("Helvetica", 13))
     
     scrollbar2 = Scrollbar(row, orient=VERTICAL)
     int_2_list = Listbox(row, yscrollcommand=scrollbar2.set)
@@ -170,35 +169,31 @@ except AttributeError:
     pass
 #    
 if len(origin_list)>0:
-    while True:
-        #Creates menu for user to enter the length of their study.
-        request_option = Tk()
-        row = Frame(request_option)
-        r_length = IntVar()
-        lab = Label(row, width=30, text="Enter Study Duration", anchor='w', font=("Helvetica", 10))
-        ent = Entry(row, textvariable=r_length)
-        
-        row.pack(side=TOP, fill=X, padx=5, pady=5)
-        lab.pack(side=LEFT)
-        ent.pack(side=RIGHT, expand=NO, fill=X)
-        
-        
-        b1 = Button(request_option, text='Submit', command=request_length)
-        b1.pack(side=LEFT, padx=5, pady=5)
-        b2 = Button(request_option, text='Quit', command=request_option.destroy)
-        b2.pack(side=LEFT, padx=5, pady=5)
-        request_option.mainloop()
-        if isinstance(r_length, int) == True:
-            break
+
+    #Creates menu for user to enter the length of their study.
+    request_option = Tk()
+    row = Frame(request_option)
+    r_length = IntVar()
+    lab = Label(row, width=30, text="Enter Study Duration", anchor='w', font=("Helvetica", 10))
+    ent = Entry(row, textvariable=r_length)
+    
+    row.pack(side=TOP, fill=X, padx=5, pady=5)
+    lab.pack(side=LEFT)
+    ent.pack(side=RIGHT, expand=NO, fill=X)
+    
+    
+    b1 = Button(request_option, text='Submit', command=request_length)
+    b1.pack(side=LEFT, padx=5, pady=5)
+    b2 = Button(request_option, text='Quit', command=request_option.destroy)
+    b2.pack(side=LEFT, padx=5, pady=5)
+    request_option.mainloop()
 
 
-print(origin_list)
 # In[1]:
 
 
-def GDistMat(reqtime, origins, destinations, RName, timestamp):
+def GDistMat(reqtime, origins, destinations, timestamp):
     #Google Maps Travel Time Output Tool
-    #No User Inputs Required
 
     import os
     import googlemaps
@@ -251,14 +246,14 @@ def create_table():
     import time
     import datetime
     import calendar
-    conn = psycopg2.connect(host="10.1.2.165",database="TravelTime", user="postgres", password="postgres")
+    conn = psycopg2.connect(host="10.1.2.165",database="BA_DATA", user="user", password="password")
     year = datetime.datetime.today()
     year = year.year
     try:
         cur = conn.cursor()
         # After connecting to the SQL database this creates a table based on the year if it does not yet exist
         #Creates columns Intersection 1, 2, node 1,2, Month, date, day, travel time, distance and request time.
-        sql = "CREATE TABLE IF NOT EXISTS Intersection_Selection_" + str(year) + "(ID_1 REAL, ID_2 REAL, Int1 VARCHAR(70), Int2 VARCHAR(70), Month VARCHAR(50), Day VARCHAR(50), Date VARCHAR(50), Travel_Time REAL, Distance REAL, RTime TIME)"
+        sql = "CREATE TABLE IF NOT EXISTS private_veh_traveltime (ID_1 REAL, ID_2 REAL, Int1 VARCHAR(70), Int2 VARCHAR(70), Month VARCHAR(50), Day VARCHAR(50), Date VARCHAR(50), Travel_Time REAL, Distance REAL, RTime TIME)"
         cur.execute(sql)
         # execute the Create statement
 
@@ -266,7 +261,7 @@ def create_table():
         conn.commit()
         
     except (Exception, psycopg2.DatabaseError) as error:
-        print(error)
+        print("error")
     finally:
         if conn is not None:
 #Closes the connection to the database. Make sure to close this so the database won't get slowed down with extra connections.
@@ -292,7 +287,7 @@ def apicall(origin_list, destination_list, inter_1_list, inter_2_list, id_1_list
     delay_time = 0
     
     RName = 'TestRoute'
-    conn = psycopg2.connect(host="10.1.2.165",database="TravelTime", user="postgres", password="postgres")
+    conn = psycopg2.connect(host="10.1.2.165",database="BA_DATA", user="user", password="password")
     timer = datetime.datetime.today()
     dateref = timer.date()
     
@@ -320,7 +315,7 @@ def apicall(origin_list, destination_list, inter_1_list, inter_2_list, id_1_list
 
                 reqtime= "now"
                 timestamp = time.strftime("%H:%M:%S")
-                travel_info = GDistMat(reqtime, origins, destinations, RName, timestamp)
+                travel_info = GDistMat(reqtime, origins, destinations, timestamp)
                 #Increase requests number by 1 for each request made. Stops the code if the requests gets above the limit.
                 requests += 1
 
@@ -336,7 +331,7 @@ def apicall(origin_list, destination_list, inter_1_list, inter_2_list, id_1_list
 
                 cur = conn.cursor()
                     # execute the INSERT statement
-                sql = "INSERT INTO Intersection_Selection_" + str(year) + "(ID_1, ID_2, Int1, Int2, Month, Day, Date, Travel_Time, Distance, RTime)                        VALUES(%(id1)s, %(id2)s, %(int1)s, %(int2)s, %(month)s, %(day)s, %(date)s, %(time)s, %(distance)s, %(rtime)s)"
+                sql = "INSERT INTO private_veh_traveltime (ID_1, ID_2, Int1, Int2, Month, Day, Date, Travel_Time, Distance, RTime)                        VALUES(%(id1)s, %(id2)s, %(int1)s, %(int2)s, %(month)s, %(day)s, %(date)s, %(time)s, %(distance)s, %(rtime)s)"
                 cur.execute(sql,travel_info)
                 # commit the changes to the database
                 conn.commit()
@@ -388,5 +383,5 @@ try:
             day_index = datetime.datetime.today()
     schedule.clear('api')
     alert(title="Note!", text="Done!", button="OK")
-except (NameError):
+except (NameError, TypeError):
     alert(title='Error', text='Request not made', button='OK')

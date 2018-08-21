@@ -144,7 +144,7 @@ def apicall(origin_list, destination_list, inter_1_list, inter_2_list, id_1_list
     
     limit = 50000
     
-    delay_time = 0
+    delay_time = 120
     
     conn = psycopg2.connect(host="10.1.2.165",database="BA_DATA", user="user", password="password")
 
@@ -157,54 +157,45 @@ def apicall(origin_list, destination_list, inter_1_list, inter_2_list, id_1_list
     month = dateref.strftime("%B")
 
     
-    #counter = 0
-    #rounds = 1
+    counter = 0
+    rounds = 1
     timer = datetime.datetime.today()
-    timerh = timer.hour
-    timerm = timer.minute
-    timer = timerh*60 + timerm
-    hour_stop = timerh*60 + timerm + 120
-
+    timer = timer.hour
+    hour_stop = timer
+    
     requests = 0
-        
-    while timer <= hour_stop and requests <= limit:
+    
+    while counter < rounds:
         tic = time.clock()
         for i in range(rowCounter, len(origin_list)):
-            if requests <=limit and timer <=hour_stop:
-                #Defines which OD pair to pull from the long list
-                origins = origin_list[rowCounter]
-                destinations = destination_list[rowCounter]
+            #Defines which OD pair to pull from the long list
+            origins = origin_list[rowCounter]
+            destinations = destination_list[rowCounter]
 
-                reqtime= "now"
-                timestamp = time.strftime("%H:%M:%S")
-                travel_info = GDistMat(reqtime, origins, destinations, timestamp)
-                #Increase requests number by 1 for each request made. Stops the code if the requests gets above the limit.
-                requests += 1
+            reqtime= "now"
+            timestamp = time.strftime("%H:%M:%S")
+            travel_info = GDistMat(reqtime, origins, destinations, timestamp)
+            #Increase requests number by 1 for each request made. Stops the code if the requests gets above the limit.
+            requests += 1
 
-                travel_info['day'] = day
-                travel_info['date'] = date
-                travel_info['month'] = month
-                travel_info['id1'] = id_1_list[rowCounter]
-                travel_info['id2'] = id_2_list[rowCounter]
-                travel_info['int1'] = inter_1_list[rowCounter]
-                travel_info['int2'] = inter_2_list[rowCounter]
+            travel_info['day'] = day
+            travel_info['date'] = date
+            travel_info['month'] = month
+            travel_info['id1'] = id_1_list[rowCounter]
+            travel_info['id2'] = id_2_list[rowCounter]
+            travel_info['int1'] = inter_1_list[rowCounter]
+            travel_info['int2'] = inter_2_list[rowCounter]
+            year = datetime.datetime.today()
+            year = year.year
 
-                year = datetime.datetime.today()
-                year = year.year
-
-                cur = conn.cursor()
-                    # execute the INSERT statement
-                sql = "INSERT INTO private_veh_traveltime (ID_1, ID_2, Int1, Int2, Month, Day, Date, Travel_Time, Distance, RTime)  VALUES(%(id1)s, %(id2)s, %(int1)s, %(int2)s, %(month)s, %(day)s, %(date)s, %(time)s, %(distance)s, %(rtime)s)"
-
-                cur.execute(sql,travel_info)
-                # commit the changes to the database
-                conn.commit()
-                timer = datetime.datetime.today()
-                timerh = timer.hour
-                timerm = timer.minute
-                timer = timerh*60 + timerm
-                if rowCounter < len(origin_list):
-                    rowCounter += 1
+            cur = conn.cursor()
+                # execute the INSERT statement
+            sql = "INSERT INTO private_veh_traveltime (ID_1, ID_2, Int1, Int2, Month, Day, Date, Travel_Time, Distance, RTime)                        VALUES(%(id1)s, %(id2)s, %(int1)s, %(int2)s, %(month)s, %(day)s, %(date)s, %(time)s, %(distance)s, %(rtime)s)"
+            cur.execute(sql,travel_info)
+            # commit the changes to the database
+            conn.commit()
+            if rowCounter < len(origin_list):
+                rowCounter += 1
             else:
                 break
         if rowCounter == len(origin_list):
@@ -217,7 +208,8 @@ def apicall(origin_list, destination_list, inter_1_list, inter_2_list, id_1_list
         if sleepTime > 0 and requests < limit:
             time.sleep(sleepTime)
         #Return new hour to check if it's past the stop hour.
-        
+        timer = datetime.datetime.today()
+        timer = timer.hour
     conn.close
     #houston("success")
     
@@ -240,14 +232,15 @@ import schedule
 import datetime
 import time
 rowCounter = 0
-schedule.every(2).minutes.do(apicall, origin_list, destination_list, inter_1_list, inter_2_list, id_1_list, id_2_list).tag('api')
+#schedule.every(2).minutes.do(apicall, origin_list, destination_list, inter_1_list, inter_2_list, id_1_list, id_2_list).tag('api')
+apicall(origin_list, destination_list, inter_1_list, inter_2_list, id_1_list, id_2_list)
 dayCounter = 0
 
 """Checks to see if the current day is the same as the current day, otherwise it adds one to the counter.
     Keeps count of how many days the script has been running"""
-while dayCounter < 1:
-    schedule.run_pending()
-    time.sleep(1)
-schedule.clear('api')
-print("Finish")
+#while dayCounter < 1:
+#    schedule.run_pending()
+#    time.sleep(1)
+#schedule.clear('api')
+#print("Finish")
 

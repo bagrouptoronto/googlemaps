@@ -22,6 +22,7 @@ global id_1_list
 global id_2_list
 global inter_1_list
 global inter_2_list
+
 #Initialize lists
 id_1_list = []
 id_2_list = []
@@ -79,7 +80,23 @@ def request_length():
         request_option.destroy()
     else:
         alert(title="Not Valid", text="Enter a valid number", button="OK")
-    
+
+
+def update_list_1(x,y,z):
+    search_term = filter_1.get()
+    int_1_list.delete(0, END)
+ 
+    for item in int_1:
+        if search_term.lower() in item.lower():
+            int_1_list.insert(END, item)
+            
+def update_list_2(x,y,z):
+    search_term = filter_2.get()
+    int_2_list.delete(0, END)
+ 
+    for item in int_2:
+        if search_term.lower() in item.lower():
+            int_2_list.insert(END, item)
 try:
         
     streetlist = ""
@@ -119,38 +136,65 @@ try:
     row = Frame(intersections)
     two_way_check = IntVar()
     
+    #Initilize variables for entry and listbox fields
+    int_1_filter = StringVar()
+    int_2_filter = StringVar()
+    
     int_1_select = StringVar()
     int_2_select = StringVar()
     
     lab1 = Label(row, width=20, text="Intersection 1:", anchor='w', font=("Helvetica", 13))
     
+    filter_1 = Entry(row, textvariable=int_1_filter)
+    
+    #Everytime a user types in a letter into the entry field it updates the lists.
+    int_1_filter.trace('w', update_list_1)
+
     scrollbar1 = Scrollbar(row, orient=VERTICAL)
     int_1_list = Listbox(row, yscrollcommand=scrollbar1.set)
+    
+    #Set scrollbar for list 1
     scrollbar1.config(command=int_1_list.yview)
     
     for item in int_1:
         int_1_list.insert(END, item)
+        
+    #Pack first frame
     row.pack(side=TOP, fill=X)
     lab1.pack(side=LEFT)
+    filter_1.pack(side=LEFT, padx=10)
+    
     scrollbar1.pack(side=RIGHT, fill = Y)
     int_1_list.pack(side= RIGHT, fill=X, expand=YES)
     
+    #Create second frame
     row = Frame(intersections)
     lab2 = Label(row, width=20, text="Intersection 2:", anchor='w', font=("Helvetica", 13))
-    
+    filter_2 = Entry(row, textvariable=int_2_filter)
+
+
+    #Everytime a user types in a letter into the entry field it updates the lists
+    int_2_filter.trace('w', update_list_2)
+
     scrollbar2 = Scrollbar(row, orient=VERTICAL)
+    
     int_2_list = Listbox(row, yscrollcommand=scrollbar2.set)
+    #Set scrollbar for list 2
     scrollbar2.config(command=int_2_list.yview)
     
     
     for item in int_2:
         int_2_list.insert(END, item)
+
+    #Pack second frame
     row.pack(side=TOP, fill=X)
     lab2.pack(side=LEFT)
+    filter_2.pack(side=LEFT, padx=10)
     scrollbar2.pack(side=RIGHT, fill=Y)
     int_2_list.pack(side= RIGHT, fill=X, expand=YES)
     
     row.pack(side=TOP, fill=X)
+    
     #Provides an option for people to request data in both directions.
     row = Frame(intersections)
     two_way_button = Checkbutton(row, text="Two Way", variable = two_way_check)
@@ -158,7 +202,7 @@ try:
     two_way_button.pack(side=RIGHT)
     
     row.pack(side=TOP, fill=X)
-    
+    #Pack final buttons
     b1 = Button(intersections, text='Append', command=saveinter)
     b1.pack(side=LEFT, padx=5, pady=5)
     b2 = Button(intersections, text='Finish', command=intersections.destroy)
@@ -200,7 +244,7 @@ def GDistMat(reqtime, origins, destinations, timestamp):
     import datetime
     import calendar
     import time
-    maps_key = "PLACEHOLDER"
+    maps_key = "AIzaSyCma3ToCjTI_7A5Wkq0HUeDtNtACS0IS20"
     gmaps = googlemaps.Client(key=maps_key)
 
     deptime = reqtime

@@ -144,7 +144,7 @@ def apicall(origin_list, destination_list, inter_1_list, inter_2_list, id_1_list
     
     limit = 50000
     
-    delay_time = 300
+    delay_time = 0
     
     conn = psycopg2.connect(host="10.1.2.165",database="BA_DATA", user="user", password="password")
 
